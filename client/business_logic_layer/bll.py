@@ -61,27 +61,42 @@ class BusinessLogicLayer:
         orders = BusinessLogicLayer.get_customer_order(customer_number)
         orders.customer_id = decision.get('customer_id')
         order = orders.get_order_by_order_number(str(decision.get('order_number')))
-        order_decision = decision.get('decision')
-        order_status = Status.get_status_by_name(decision.get('status'))
-        order.set_decision(order_decision)
-        order.set_actual_status(order_status)
-        order.order_id_supplier_side = decision.get('order_id')
+        if order.actual_status == 'initiated':
+            order_decision = decision.get('decision')
+            order_status = Status.get_status_by_name(decision.get('status'))
+            order.set_decision(order_decision)
+            order.set_actual_status(order_status)
+            order.order_id_supplier_side = decision.get('order_id')
+            print(orders.to_dict())
+            DataAccess().update_customer_orders(customer_number, orders)
+            return "Votre décision a été bien reçu"
+        else:
+            return 'Decision deja prise'
+
+    @staticmethod
+    def update_order_devis(customer_number, devis: dict):
+        orders = BusinessLogicLayer.get_customer_order(customer_number)
+        orders.customer_id = devis.pop('customer_id')
+        order = orders.get_order_by_order_number(str(devis.pop('order_number')))
+        order.order_id_supplier_side = devis.pop('order_id')
+        order.devis = devis
         print(orders.to_dict())
         DataAccess().update_customer_orders(customer_number, orders)
+        return "devis a été bien reçu"
 
 
     @staticmethod
-    def add_order(order: Orders):
-        order_list = order.orders
+    def add_order(orders: Orders):
+        order_list = orders.orders
         # print(order_list)
         last_order = order_list[0].__dict__()
         last_order = last_order.get('1')
         derniere_ordre = Order(**last_order)
         print(derniere_ordre.__dict__())
-        result = DataAccess.add_order(order.to_dict(), derniere_ordre)
+        customer_number, derniere_ordre = DataAccess.add_order(orders.to_dict(), derniere_ordre)
         print("Commande inserée avec succès.")
 
-        return result
+        return customer_number, derniere_ordre
 
         # else:
         #     return last_order.get('order_id')

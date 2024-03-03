@@ -8,6 +8,7 @@ from sqlalchemy import func
 
 
 class Status(enum.Enum):
+    confiremd_by_customer = "Confirmed by customer"
     validated = "Validated"
     cancelled_by_customer = "Cancelled by Customer"
     initiated = "Initiated"

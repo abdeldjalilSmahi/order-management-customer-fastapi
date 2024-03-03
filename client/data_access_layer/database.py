@@ -91,10 +91,11 @@ class DataAccess:
 
 
     @staticmethod
-    def add_order(order: dict, last_order: Order):
-        customer = DataAccess.get_order_by_email(order.get("email"))
+    def add_order(orders: dict, last_order: Order):
+        customer = DataAccess.get_order_by_email(orders.get("email"))
         if customer:
             print("client deja exist")
+            customer_number = customer.get('customer_number')
             orders = customer.get('orders')
             number_of_order = len(orders)
             order_number = number_of_order + 1
@@ -103,21 +104,28 @@ class DataAccess:
 
             if result:
                 print("Bien rajouté")
-                return last_order
+                return customer_number, last_order
             else:
                 raise Exception("Error")
 
         print("Nouveau client avec nouvelle commande")
 
-        result = DataAccess().collection.insert_one(order)
+        result = DataAccess().collection.insert_one(orders)
         if result:
             print("Bien rajouté ")
-            return last_order
+            return orders.get('customer_number'), last_order
         else:
             raise Exception("Error")
 
     @staticmethod
     def update_customer_orders(customer_number, orders: Orders):
+        customer_id = orders.customer_id
+        result = DataAccess().collection.update_one(
+            {"customer_number": customer_number},
+            {"$set": {"customer_id": customer_id}}
+        )
+
+
         # Convertir l'objet Orders en une structure adaptée à MongoDB
         orders_dict = [order.__dict__() for order in orders.orders]
 
@@ -131,6 +139,7 @@ class DataAccess:
                 print("Aucune mise à jour effectuée. Vérifiez le critère de recherche.")
             else:
                 print("Mise à jour effectuée avec succès.")
+                return "OK"
         except Exception as e:
             print(f"Erreur lors de la mise à jour : {e}")
 
