@@ -78,7 +78,7 @@ class DataAccess:
             print(e)
 
     @staticmethod
-    def push_new_order_for_existing_customer(email, new_order : dict):
+    def push_new_order_for_existing_customer(email, new_order: dict):
         # Ajouter la nouvelle commande à la liste d'orders du client
         search_criteria = {"email": email}
         result = DataAccess().collection.update_one(search_criteria, {'$push': {'orders': new_order}})
@@ -88,7 +88,6 @@ class DataAccess:
             return True
         else:
             return False
-
 
     @staticmethod
     def add_order(orders: dict, last_order: Order):
@@ -125,7 +124,6 @@ class DataAccess:
             {"$set": {"customer_id": customer_id}}
         )
 
-
         # Convertir l'objet Orders en une structure adaptée à MongoDB
         orders_dict = [order.__dict__() for order in orders.orders]
 
@@ -143,12 +141,23 @@ class DataAccess:
         except Exception as e:
             print(f"Erreur lors de la mise à jour : {e}")
 
-
-
-
-
+    @staticmethod
+    def get_decision(customer_number, order_number):
+        # Requête pour trouver le document correspondant aux critères
+        query = {
+            "customer_number": customer_number
+        }
+        document = DataAccess().collection.find_one(query)
+        # Extraire et afficher la décision pour l'order_number spécifié, si le document est trouvé
+        if document:
+            for order in document['orders']:
+                dictionnaire = order
+                for cle in dictionnaire:
+                    if cle == order_number:
+                        return dictionnaire[cle]['decision']
+        else:
+            print("Document non trouvé avec les critères donnés.")
 
 
 if __name__ == "__main__":
     print(DataAccess.get_order_customer("0df6989558cd4d6ca0ace412ef4f73b1"))
-

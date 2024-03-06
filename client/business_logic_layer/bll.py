@@ -26,17 +26,9 @@ class BusinessLogicLayer:
     def is_valid_phone_number(phone_number: str) -> bool:
         if phone_number is None or phone_number.lower() == "string":
             return False
-
-        # Expression régulière pour valider les formats de numéro de téléphone
-        # Accepte les formats comme "0764177198" ou "+33764177198"
         phone_pattern = r'^(?:\+\d{2})?\d{10}$'
-
         return re.match(phone_pattern, phone_number) is not None
 
-    # @staticmethod
-    # def add_order(order: Orders):
-    #     data_access = DataAccess()
-    #     data_access.add_order(order.__dict__)
 
     @staticmethod
     def get_customer_order(customer_number) -> Orders:
@@ -84,11 +76,17 @@ class BusinessLogicLayer:
         DataAccess().update_customer_orders(customer_number, orders)
         return "devis a été bien reçu"
 
+    @staticmethod
+    def update_order_actual_status(customer_number, order_number, status:Status):
+        orders = BusinessLogicLayer.get_customer_order(customer_number)
+        order = orders.get_order_by_order_number(str(order_number))
+        order.actual_status = status.value
+        DataAccess().update_customer_orders(customer_number, orders)
+        return "status de la commande a été bien modifié"
 
     @staticmethod
     def add_order(orders: Orders):
         order_list = orders.orders
-        # print(order_list)
         last_order = order_list[0].__dict__()
         last_order = last_order.get('1')
         derniere_ordre = Order(**last_order)
@@ -98,8 +96,10 @@ class BusinessLogicLayer:
 
         return customer_number, derniere_ordre
 
-        # else:
-        #     return last_order.get('order_id')
+    @staticmethod
+    def get_decision(customer_number, order_number):
+        return DataAccess().get_decision(customer_number, order_number)
+
 
 
 if __name__ == '__main__':

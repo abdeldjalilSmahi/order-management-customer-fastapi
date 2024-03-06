@@ -17,18 +17,24 @@ async def order_confirmation(customer_number: str, order_decision: DecisionPlMod
 
 
 @app.put("/order_devis/{customer_number}")
-async def order_decision(customer_number: str, devis: Quote = Body()):
+async def order_decision(backgroundtasks: BackgroundTasks, customer_number: str, devis: Quote = Body()):
     decision = devis.model_dump()
+    print("############")
+    data_to_send = decision.copy()
+    data_to_send["customer_number"] = customer_number
+    print("############")
+    queue_name = customer_number + "-devis"
     message = BusinessLogicLayer.update_order_devis(customer_number, decision)
+    backgroundtasks.add_task(envoyer_message_a_queue, queue_name, json.dumps(data_to_send))
     return {"message": message}
 
 
-@app.put("/order_facture/{customer_number}")
-async def order_decision(backgroundtasks: BackgroundTasks,customer_number: str, order_decision: DecisionPlModel = Body()):
-    decision = order_decision.model_dump()
-    BusinessLogicLayer.update_order_decision(customer_number, decision)
-    backgroundtasks.add_task(envoyer_message_a_queue, 'devis',  json.dumps(decision))
-    return {"message": "Votre décision a été bien reçu"}
+# @app.put("/order_facture/{customer_number}")
+# async def order_decision(backgroundtasks: BackgroundTasks,customer_number: str, order_decision: DecisionPlModel = Body()):
+#     decision = order_decision.model_dump()
+#     BusinessLogicLayer.update_order_decision(customer_number, decision)
+#     backgroundtasks.add_task(envoyer_message_a_queue, 'devis',  json.dumps(decision))
+#     return {"message": "Votre décision a été bien reçu"}
 
 
 if __name__ == "__main__":
