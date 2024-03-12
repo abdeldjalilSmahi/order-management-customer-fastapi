@@ -72,7 +72,6 @@ class BusinessLogicLayer:
         order = orders.get_order_by_order_number(str(devis.pop('order_number')))
         order.order_id_supplier_side = devis.pop('order_id')
         order.devis = devis
-        print(orders.to_dict())
         DataAccess().update_customer_orders(customer_number, orders)
         return "devis a été bien reçu"
 
@@ -99,6 +98,10 @@ class BusinessLogicLayer:
     @staticmethod
     def get_decision(customer_number, order_number):
         return DataAccess().get_decision(customer_number, order_number)
+
+    @staticmethod
+    def get_order(customer_number, order_number):
+        return DataAccess().get_order(customer_number, order_number)
 
 
 

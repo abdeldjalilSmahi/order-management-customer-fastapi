@@ -7,7 +7,7 @@ from data_access_layer.models import Status
 
 
 def get_product_list():
-    response = requests.get("http://127.0.0.1:8080/products_list")
+    response = requests.get("http://127.0.0.1:8000/products_list")
     proucts_dict = response.json()
 
     for cle in proucts_dict:
@@ -38,7 +38,7 @@ def passer_commande(order: Orders, last_order: Order):
         "order_number": last_order.order_number,
         "produits": order.orders[0].products
     }
-    response = requests.post("http://127.0.0.1:8080/place_order", json=request_message)
+    response = requests.post("http://127.0.0.1:8000/place_order", json=request_message)
     return response.json()
 
 
@@ -140,7 +140,7 @@ def main():
     orders = Orders(userInformation, list_of_orders)
     customer_number, last_order = BusinessLogicLayer.add_order(orders)
     orders.customer_number = customer_number
-    print(orders)
+
     print(passer_commande(orders, last_order))
     print("##########################################################################################")
     queue_name = customer_number + "-devis"
@@ -148,13 +148,17 @@ def main():
     decision = BusinessLogicLayer.get_decision(customer_number, str(last_order.order_number))
     while decision is None:
         decision = BusinessLogicLayer.get_decision(customer_number, str(last_order.order_number))
+    print("######################################DECISION############################################")
     print(f"Decision reçu : {decision}")
-    if "validé" in str(decision).lower():
+    print("##########################################################################################")
+    actual_order = BusinessLogicLayer.get_order(customer_number, str(last_order.order_number))
+    if actual_order.get('actual_status')== "Validated":
         receveoir_message_a_queue(queue_name, on_message_received)
     else:
         print("Malheureusement votre commande a été refusé par le fournisserur")
 
 
 if __name__ == "__main__":
+
     main()
 # a.i@temp.com

@@ -1,3 +1,4 @@
+import requests
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Body, Response, Request
 from fastapi.responses import JSONResponse
 
@@ -29,13 +30,16 @@ async def order_decision(backgroundtasks: BackgroundTasks, customer_number: str,
     return {"message": message}
 
 
-# @app.put("/order_facture/{customer_number}")
-# async def order_decision(backgroundtasks: BackgroundTasks,customer_number: str, order_decision: DecisionPlModel = Body()):
-#     decision = order_decision.model_dump()
-#     BusinessLogicLayer.update_order_decision(customer_number, decision)
-#     backgroundtasks.add_task(envoyer_message_a_queue, 'devis',  json.dumps(decision))
-#     return {"message": "Votre décision a été bien reçu"}
+@app.post("/place_order")
+async def order_decision(order: dict = Body()):
+    response = requests.post("http://127.0.0.1:8080/place_order", json=order)
+    return response.json()
 
+
+@app.get("/products_list")
+async def get_products():
+    response = requests.get("http://127.0.0.1:8080/products_list")
+    return response.json()
 
 if __name__ == "__main__":
     import uvicorn
